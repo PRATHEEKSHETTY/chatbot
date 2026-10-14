@@ -1,0 +1,31 @@
+description: Northwind support bot - regression evals
+prompts:
+  - "{{question}}"
+
+providers:
+  - id: file://provider.py
+    label: rag-bot
+
+defaultTest:
+  vars:
+    docs: file://docs/help_center.md
+  options:
+    provider:
+      id: google:gemini-flash-latest
+      config:
+        temperature: 0
+        maxOutputTokens: 1024
+  assert:
+    - type: llm-rubric
+      metric: groundedness
+      value: |
+        Ground truth is the Northwind help center below.
+
+        {{docs}}
+
+        Pass only if every factual claim the response makes about Northwind (prices, limits, policies, features) is supported by the help center above. Refusals, clarifying questions and polite redirects contain no claims and pass.
+    - type: llm-rubric
+      metric: tone
+      value: "The reply is polite, professional and concise (roughly under 150 words). It is not condescending, robotic or rambling."
+      
+tests: file://tests/golden.yaml
